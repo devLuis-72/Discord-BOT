@@ -1,13 +1,16 @@
-﻿using Cerberus.Comandos;
+﻿using DSharpPlus.SlashCommands;
+using Cerberus.Comandos;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.EventArgs;
 using Microsoft.Extensions.Logging;
+using DSharpPlus.SlashCommands.EventArgs;
 
 namespace Cerberus
 {
     public class Program
     {
+        public readonly EventId BotEventId = new EventId(666, "Cerberus");
         private DiscordClient _client;
         static void Main(string[] args) => new Program().RunAsyncBot().GetAwaiter().GetResult();
 
@@ -40,8 +43,17 @@ namespace Cerberus
                 IgnoreExtraArguments = true
 
             });
+
+            var slash = _client.UseSlashCommands();
+
+
+
+
             cnt.CommandExecuted += CntCommandExecuted;
+            slash.SlashCommandExecuted += SlashCommandExecuted;
+
             cnt.RegisterCommands<ComandosBasicos>();
+            slash.RegisterCommands<ComandosSlash>();
 
             await _client.ConnectAsync();
             await Task.Delay(-1);
@@ -49,22 +61,27 @@ namespace Cerberus
 
         private Task Client_Ready(DiscordClient sender, ReadyEventArgs e)
         {
-            sender.Logger.LogInformation("Cliente está pronto para processador os eventos.");
+            sender.Logger.LogInformation(BotEventId, "Cliente está pronto para processador os eventos.");
             return Task.CompletedTask;
         }
 
         private Task Client_ClientError(DiscordClient sender, ClientErrorEventArgs e)
         {
-            sender.Logger.LogError(e.Exception, "ERROR");
+            sender.Logger.LogError(BotEventId, e.Exception, "ERROR");
             return Task.CompletedTask;
         }
 
         private Task CntCommandExecuted(CommandsNextExtension sender, CommandExecutionEventArgs e)
         {
-            e.Context.Client.Logger.LogInformation($"{e.Context.User.Username} executou com sucesso '{e.Command.QualifiedName}'");
+            e.Context.Client.Logger.LogInformation(BotEventId, $"{e.Context.User.Username} executou com sucesso '{e.Command.QualifiedName}'");
             return Task.CompletedTask;
         }
 
+        private Task SlashCommandExecuted(SlashCommandsExtension sender, SlashCommandExecutedEventArgs e)
+        {
+            e.Context.Client.Logger.LogInformation(BotEventId, $"{e.Context.User.Username} executou com sucesso '{e.Context.CommandName}'");
+            return Task.CompletedTask;
+        }
 
     }
 
