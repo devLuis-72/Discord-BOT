@@ -1,0 +1,1 @@
+Aprendendo a criar bot para Discord com a API DSharpPlus.
